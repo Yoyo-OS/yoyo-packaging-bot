@@ -1,0 +1,85 @@
+#!/bin/bash
+
+set -e
+
+YOYO_RUN_PATH="$(realpath $(pwd))"
+YOYO_RUN_DIR="$(basename ${YOYO_RUN_PATH})"
+YOYO_FILE_LIST="${YOYO_RUN_PATH}/yoyo-autobuild.list"
+YOYO_BUILD_SCRIPT="${YOYO_RUN_PATH}/yoyo-autobuild.sh"
+EXECPROGRAM="${YOYO_BUILD_SCRIPT}"
+if [ ! -d "${YOYO_RUN_DIR}/debian" ]; then
+    echo "${YOYO_RUN_DIR}/debian does not exist"
+fi
+if [ ! -f "${YOYO_BUILD_SCRIPT}" ]; then
+    echo "$EXECPROGRAM does not exist"
+    exit 1
+fi
+if [ ! -f "${YOYO_FILE_LIST}" ]; then
+    echo "$YOYO_FILE_LIST does not exist"
+    exit 1
+fi
+
+#BUILDDIR=/build2
+
+# fack pbuild variable
+export PBUILDER_OPERATION="execute"
+export PBCURRENTCOMMANDLINEOPERATION="$PBUILDER_OPERATION"
+. /usr/lib/pbuilder/pbuilder-checkparams 
+
+extractbuildplace
+trap umountproc_cleanbuildplace_trap exit sighup
+
+
+
+
+# copy the project
+cp -r "${YOYO_RUN_PATH}" "${BUILDPLACE}$BUILDDIR"
+copyinputfile "${BUILDPLACE}$BUILDDIR"
+
+
+
+
+
+
+recover_aptcache
+trap saveaptcache_umountproc_cleanbuildplace_trap exit sighup
+#
+RUNNAME="$BUILDPLACE/runscript"
+cat "$EXECPROGRAM" > "$RUNNAME"
+chmod a+x "$RUNNAME"
+executehooks "F"
+( ${CHROOTEXEC} /runscript "$@" )
+RET=$?
+rm -f "$RUNNAME"
+
+save_aptcache
+trap umountproc_cleanbuildplace_trap exit sighup
+
+# saving the place afterwards
+if [ "${SAVE_AFTER_LOGIN}" = "yes" ]; then
+    if [ "${INTERNAL_BUILD_UML}" = "yes" ]; then
+        log.e "Invalid combination of internal-build-uml and save-after-login flags"
+        exit 1
+    else
+       log.i "Saving the results, modifications to this session will persist"
+        umountproc
+        trap cleanbuildplace_trap exit sighup
+        ${CHROOTEXEC} apt-get clean || true
+        create_basetgz
+        cleanbuildplace
+        trap - exit sighup
+        exit $RET
+    fi
+fi
+
+# cp packages
+for pkg in $(cat ${YOYO_FILE_LIST}); do
+	cp -v "${BUILDPLACE}$BUILDDIR/${pkg}" "${YOYO_RUN_PATH}/${pkg}"
+done
+
+umountproc_cleanbuildplace_trap
+
+trap - exit sighup
+exit $RET
+
+
