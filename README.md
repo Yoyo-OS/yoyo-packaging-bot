@@ -1,24 +1,14 @@
 # yoyo-packaging-bot
-YoyoOS packaging bot
 
-## Bot dependencies
+Not a bot yet.
 
-+ ``debootstrap`` to make chroot environment for ``yoyo-chroot-builder``
-+ TODO: ``socat`` to get new command from outside (localhost only)
-+ TODO: ``socat`` to get http requests from browser (for bot health)
+## yoyo-chroot-builder
 
-## Bot autobuild policies
+A script to run [pbuilder](https://pbuilder-team.pages.debian.net/pbuilder/).
 
-+ TODO: Read registed repository list from database
-+ TODO: Refresh data from database every 5 minutes
-+ TODO: Polling GitHub API and find new tags (and manually send new tag to the bot)
-+ TODO: Clone repository and build with ``yoyo-chroot-builder`` or ``ycb``
-+ TODO: Add new packages into local ``aptly`` repository
-+ TODO: Shot a new snapshot everyday at 3:00 and publish it (and manually create and publish new snapshot at any time, but DO NOT use default snapshot name)
+But not have been used yet.
 
-## IN-PROGRESS: yoyo-chroot-builder (ycb)
+## yoyo-repo-syncer
 
-A package builder to build package in chroot environment, referenced some code from [``pbuilder``](https://wiki.ubuntu.com/pbuilder), to build package directly from upstream package (without generating debian source package), it need a ``yoyo-build.sh`` at the root of directory to instruct the build process in chroot environment.
-
-As it depends on ``debootstrap``, you should install it before using ycb.
+Automatically sync repo to and from different cloud storage providers with [Rclone](https://github.com/rclone/rclone).
 

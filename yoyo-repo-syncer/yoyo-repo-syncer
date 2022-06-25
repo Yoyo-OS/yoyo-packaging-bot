@@ -1,0 +1,64 @@
+#!/bin/bash
+
+set -e
+
+GIT_REPO=git@github.com:Yoyo-OS/packages.git
+GIT_BRANCH=master
+GIT_MAX_SIZE=1073741824   # in bytes
+SYNC_DIRS="dists lists pool key sources_mirrors.list"
+REMOTE_REPOS="yoyo-publish:yoyoos/yoyo"
+
+git --version >/dev/null
+rclone version >/dev/null
+
+WORK_DIR=/tmp/yoyo-repo-syncer
+OLD_DIR=$(pwd)
+
+cd /tmp
+[[ -d ${WORK_DIR} ]] || mkdir ${WORK_DIR} -m 700
+cd ${WORK_DIR}
+if [[ -d ${WORK_DIR}/git-repo ]]; then
+	cd ${WORK_DIR}/git-repo
+	if ! git pull --quiet; then
+		rm -rf *
+		git clone --quiet ${GIT_REPO} .
+	fi
+else
+	git clone --quiet ${GIT_REPO} git-repo
+fi
+cd ${WORK_DIR}/git-repo
+git checkout --quiet ${GIT_BRANCH}
+cd ${WORK_DIR}
+
+[[ -d ${WORK_DIR}/remote-repo ]] && rm -rf ${WORK_DIR}/remote-repo
+mkdir ${WORK_DIR}/remote-repo
+
+for dir in ${SYNC_DIRS}; do
+	cp -r ${WORK_DIR}/git-repo/${dir} ${WORK_DIR}/remote-repo/
+done
+for repo in ${REMOTE_REPOS}; do
+	rclone sync ${WORK_DIR}/remote-repo ${repo}
+done
+
+size=$(du -sx --block-size=1 /tmp/yoyo-repo-syncer/git-repo | cut -f1)
+if [[ ${size} -gt ${GIT_MAX_SIZE} ]]; then
+	# clear commit logs
+	cd ${WORK_DIR}/git-repo
+	git checkout --quiet --orphan tmp-${GIT_BRANCH}-new
+	git add .
+	git commit --quiet --message "Automatical gc by yoyo-repo-syncer"
+	git branch --quiet --delete --force ${GIT_BRANCH}
+	git branch --quiet --move ${GIT_BRANCH}
+	# gc
+	git reflog expire --expire=all --all
+	git gc --quiet --aggressive --prune=now
+	new_size=$(du -sx --block-size=1 /tmp/yoyo-repo-syncer/git-repo | cut -f1)
+	if [[ ${new_size} -gt ${GIT_MAX_SIZE} ]]; then
+	       git commit --quiet --amend --message "Repo size still unbearable after automatical gc"
+	fi
+	# push
+	git push --force origin ${GIT_BRANCH}
+fi
+
+cd ${OLD_DIR}
+
