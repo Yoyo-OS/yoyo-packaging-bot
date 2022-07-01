@@ -1,6 +1,6 @@
 # yoyo-packaging-bot
 
-## Yoyo pkg bot
+## yoyo-pkg-bot
 
 A automatically packaging bot.
 
@@ -20,7 +20,9 @@ Packages will be output under ``/tmp/yoyo-pkg-bot/backup/debian_debs`` and ``/tm
 
 ## Dependencies
 
++ jq
 + git
++ debootstrap
 + schroot
 
 ## yoyo-chroot-builder
