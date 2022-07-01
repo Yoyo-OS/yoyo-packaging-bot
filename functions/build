@@ -103,12 +103,12 @@ schroot_clean() {
 # parameter: repo_path
 debian_build() {
 if [ "${DEBIAN_VERSION}" != "" ]; then
-	local tarball_name tarball_path output_path
+	local tarball_name tarball_path output_path package_path
 	bot_log d "build" "call debian build function"
 
-	[ -d ${TMP_DIR}/backup/tarballs ] || mkdir ${TMP_DIR}/backup/tarballs
+	[ -d ${SRV_DIR}/tarballs ] || mkdir ${SRV_DIR}/tarballs
 	tarball_name=debian_${DEBIAN_VERSION}_${BUILD_ARCH}_$(date -u +%Y%m%d).tar.gz
-	tarball_path=${TMP_DIR}/backup/tarballs/${tarball_name}
+	tarball_path=${SRV_DIR}/tarballs/${tarball_name}
 	if [ ! -f ${tarball_path} ]; then
 		# delete old tarball and build new tarball
 		rm -f debian_$1_${BUILD_ARCH}_*.tar.gz
@@ -116,6 +116,7 @@ if [ "${DEBIAN_VERSION}" != "" ]; then
 	fi
 
 	output_path=${TMP_DIR}/backup/debian_debs/$(basename $1)
+	package_path=${SRV_DIR}/debian_debs/$(basename $1)
 	cat >${TMP_DIR}/cache/debian_build.sh <<EOF
 #!/bin/bash
 
@@ -143,18 +144,23 @@ EOF
 	schroot_build ${output_path}
 	schroot_clean
 
+	[ -d ${package_path} ] || mkdir -p ${package_path}
+	rm -f ${package_path}/*
+	cp -v ${output_path}/*.* ${package_path}
+	rm -r ${output_path}
+
 	bot_log i "build secceed" "$(basename $1) debian ${DEBIAN_VERSION} ${BUILD_ARCH} packages"
 fi
 }
 
 ubuntu_build() {
 if [ "${UBUNTU_VERSION}" != "" ]; then
-	local tarball_name tarball_path output_path
+	local tarball_name tarball_path output_path package_path
 	bot_log d "build" "call ubuntu build function"
 
-	[ -d ${TMP_DIR}/backup/tarballs ] || mkdir ${TMP_DIR}/backup/tarballs
+	[ -d ${SRV_DIR}/tarballs ] || mkdir ${SRV_DIR}/tarballs
 	tarball_name=ubuntu_${UBUNTU_VERSION}_${BUILD_ARCH}_$(date -u +%Y%m%d).tar.gz
-	tarball_path=${TMP_DIR}/backup/tarballs/${tarball_name}
+	tarball_path=${SRV_DIR}/tarballs/${tarball_name}
 	if [ ! -f ${tarball_path} ]; then
 		# delete old tarball and build new tarball
 		rm -f ubuntu_$1_${BUILD_ARCH}_*.tar.gz
@@ -162,6 +168,7 @@ if [ "${UBUNTU_VERSION}" != "" ]; then
 	fi
 
 	output_path=${TMP_DIR}/backup/ubuntu_debs/$(basename $1)
+	package_path=${SRV_DIR}/ubuntu_debs/$(basename $1)
 	cat >${TMP_DIR}/cache/ubuntu_build.sh <<EOF
 #!/bin/bash
 
@@ -194,6 +201,11 @@ EOF
 	bot_log d "schroot" "build $(basename $1) ubuntu packages"
 	schroot_build ${output_path}
 	schroot_clean
+
+	[ -d ${package_path} ] || mkdir -p ${package_path}
+	rm -f ${package_path}/*
+	cp -v ${output_path}/*.* ${package_path}
+	rm -r ${output_path}
 
 	bot_log i "build secceed" "$(basename $1) ubuntu ${UBUNTU_VERSION} ${BUILD_ARCH} packages"
 fi

@@ -3,7 +3,8 @@
 set -e
 
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
-TMP_DIR=/srv/yoyo-pkg-bot
+TMP_DIR=/tmp/yoyo-pkg-bot
+SRV_DIR=/srv/yoyo-pkg-bot
 
 uid=$(id -u)
 if [ ${uid} -ne 0 ]; then
@@ -16,6 +17,8 @@ fi
 mkdir ${TMP_DIR}/cache
 [ -d ${TMP_DIR}/backup ] || mkdir ${TMP_DIR}/backup
 [ -d ${TMP_DIR}/repos ] || mkdir ${TMP_DIR}/repos
+# ${SRV_DIR} will store built packages
+[ -d ${SRV_DIR} ] || mkdir ${SRV_DIR}
 
 . ${SCRIPT_DIR}/config/config
 [ -f ${SCRIPT_DIR}/config/config_usr ] && . ${SCRIPT_DIR}/config/config_usr
@@ -45,6 +48,7 @@ bot_log i "setup" "YoyoOS packageing bot is running"
 
 while true; do
 cat ${SCRIPT_DIR}/config/repos | while read line; do
+	cd ${SCRIPT_DIR}
 	# user repo branch
 	# echo $line
 	new_tag=$(github_fresh_tag ${line})

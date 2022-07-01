@@ -17,24 +17,25 @@ github_fresh_tag() {
 	local tags new_tag old_tag
 	
 	tags=$(github_get_tags $1 $2)
-	touch ${TMP_DIR}/backup/tags
-	touch ${TMP_DIR}/backup/failed_tags
+	[ -d ${SRV_DIR}/github ] || mkdir ${SRV_DIR}/github
+	touch ${SRV_DIR}/github/tags
+	touch ${SRV_DIR}/github/failed_tags
 
 	# jq will return "null" if there is no tag
 	new_tag=$(echo ${tags} | jq -r ".[0] | .name")
-	old_tag=$(grep "^$1 $2 $3" ${TMP_DIR}/backup/tags | cut -f 4 -d ' ')
+	old_tag=$(grep "^$1 $2 $3" ${SRV_DIR}/github/tags | cut -f 4 -d ' ')
 	if [ "${new_tag}" != "null" ]; then
 	if [ "${new_tag}" != "${old_tag}" ]; then
 		echo ${new_tag}
 		if [ -n "${old_tag}" ]; then
-			sed -i "s/^$1 $2 $3 ${old_tag}$/$1 $2 $3 ${new_tag}/" ${TMP_DIR}/backup/tags
+			sed -i "s/^$1 $2 $3 ${old_tag}$/$1 $2 $3 ${new_tag}/" ${SRV_DIR}/github/tags
 		else
-			echo $1 $2 $3 ${new_tag} >> ${TMP_DIR}/backup/tags
+			echo $1 $2 $3 ${new_tag} >> ${SRV_DIR}/github/tags
 		fi
-	elif [ "$(grep "^$1 $2 $3 ${old_tag}$" ${TMP_DIR}/backup/failed_tags)" != "" ]; then
+	elif [ "$(grep "^$1 $2 $3 ${old_tag}$" ${SRV_DIR}/github/failed_tags)" != "" ]; then
 		# retry failed tag
 		echo ${old_tag}
-		sed -i "s/^$1 $2 $3 ${old_tag}\$//" ${TMP_DIR}/backup/failed_tags
+		sed -i "s/^$1 $2 $3 ${old_tag}\$//" ${SRV_DIR}/github/failed_tags
 	fi
 	fi
 }
@@ -42,7 +43,7 @@ github_fresh_tag() {
 # github build fail function
 # parameter: user repo branch tag
 github_failed_tag() {
-	echo $1 $2 $3 $4 >> ${TMP_DIR}/backup/failed_tags
+	echo $1 $2 $3 $4 >> ${SRV_DIR}/github/failed_tags
 	github_clean $1 $2
 }
 
@@ -53,6 +54,7 @@ github_failed_tag() {
 github_clone() {
 	local old_dir retrys
 	[ -d ${TMP_DIR}/repos/$2 ] && rm -rf ${TMP_DIR}/repos/$2
+	mkdir ${TMP_DIR}/repos/$2
 
 	retrys=0
 	while [ ${retrys} -lt 20 ]; do
