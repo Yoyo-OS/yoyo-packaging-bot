@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -e
+
+# report with gotify
+# parameter: level title message
+bot_log() {
+	[ -z ${BOT_DEBUG} ] && return 0
+
+	echo "$1 [$2] $3"
+
+	if [[ ( "$1" == "w"  ||  "$1" == "e" || "$1" == "i" ) && -n GOTIFY_URL && -n GOTIFY_TOKEN ]]; then
+		curl -s -X 'POST' \
+		"${GOTIFY_URL}/message" \
+		-H "accept: application/json" \
+		-H "Content-Type: application/json" \
+		-H "X-Gotify-Key: ${GOTIFY_TOKEN}" \
+		-d "{
+		\"message\": \"host: ${BOT_HOSTNAME}; message: $3\",
+		\"priority\": 2,
+		\"title\": \"$2\"
+		}"  >/dev/null
+	fi
+}
+

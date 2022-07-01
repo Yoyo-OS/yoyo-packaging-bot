@@ -1,0 +1,49 @@
+#!/bin/bash
+
+set -e
+
+# github tags
+# parameter: user repo
+github_get_tags() {
+	echo $(curl -s -X GET \
+		-H "Accept: application/vnd.github.v3+json" \
+		-H "Authorization: token ${GITHUB_KEY}" \
+		https://api.github.com/repos/$1/$2/tags)
+}
+
+# github new tag
+# parameter: user repo branch
+github_fresh_tag() {
+	local tags new_tag old_tag
+	
+	tags=$(github_get_tags $1 $2)
+	touch ${TMP_DIR}/backup/tags
+
+	new_tag=$(echo ${tags} | jq -r ".[0] | .name")
+	old_tag=$(grep "^$1 $2 $3" ${TMP_DIR}/backup/tags | cut -f 4 -d ' ')
+	if [ "${new_tag}" != "${old_tag}" ]; then
+		echo ${new_tag}
+		if [ -n "${old_tag}" ]; then
+			sed -i "s/$1 $2 $3 ${old_tag}/$1 $2 $3 ${new_tag}/" ${TMP_DIR}/backup/tags
+		else
+			echo $1 $2 $3 ${new_tag} >> ${TMP_DIR}/backup/tags
+		fi
+	fi
+}
+
+# github clone repo
+# do NOT forget to configure your key
+# parameter: user repo branch tag commmit
+# if tag=="-" then use commit
+github_clone() {
+	local old_dir
+	[ -d ${TMP_DIR}/repos/$2 ] && rm -rf ${TMP_DIR}/repos/$2
+	GIT_SSH_COMMAND="ssh -i ${GITHUB_SSHKEY}" git clone git@github.com:$1/$2.git ${TMP_DIR}/repos/$2
+	old_dir=$(pwd)
+	cd ${TMP_DIR}/repos/$2
+	git switch --quiet $3
+	[[ "$4" != "" && "$4" != "-" ]] && git checkout --quiet $4
+	[[ "$4" == "-" && "$5" != "" ]] && git checkout --quiet $5
+	cd ${old_dir}
+}
+

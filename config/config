@@ -1,0 +1,25 @@
+# debug mode
+BOT_DEBUG=true
+
+# self host name
+BOT_HOSTNAME=
+
+# github api key
+GITHUB_KEY=
+GITHUB_SSHKEY=
+
+# gotify config
+GOTIFY_URL=
+GOTIFY_TOKEN=
+
+# build information
+BUILD_ARCH=
+
+# debian build
+DEBIAN_VERSION=
+DEBIAN_MIRROR=
+
+# ubuntu build
+UBUNTU_VERSION=
+UBUNTU_MIRROR=
+

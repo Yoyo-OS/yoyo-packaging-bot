@@ -1,0 +1,65 @@
+#!/bin/bash
+
+set -e
+
+SCRIPT_DIR=$(cd $(dirname $0); pwd)
+TMP_DIR=/tmp/yoyo-pkg-bot
+
+uid=$(id -u)
+if [ ${uid} -ne 0 ]; then
+        echo uid is $uid, are you root?
+        exit 1
+fi
+
+[ -d ${TMP_DIR} ] || mkdir ${TMP_DIR} -m 700
+[ -d ${TMP_DIR}/cache ] && rm -rf ${TMP_DIR}/cache
+mkdir ${TMP_DIR}/cache
+[ -d ${TMP_DIR}/backup ] || mkdir ${TMP_DIR}/backup
+[ -d ${TMP_DIR}/repos ] || mkdir ${TMP_DIR}/repos
+
+. ${SCRIPT_DIR}/config/config
+[ -f ${SCRIPT_DIR}/config/config_usr ] && . ${SCRIPT_DIR}/config/config_usr
+
+if [ -z ${GITHUB_KEY} ]; then
+	echo No github key
+	exit 1
+fi
+if [ -z ${GITHUB_SSHKEY} ]; then
+	echo No github ssh key
+	exit 1
+fi
+if [ -z ${BUILD_ARCH} ]; then
+	echo No build arch
+	exit 1
+fi
+if [ "$(cat ${SCRIPT_DIR}/config/repos)" == "" ]; then
+	echo No package signed
+	exit 1
+fi
+
+. ${SCRIPT_DIR}/functions/logging
+. ${SCRIPT_DIR}/functions/github
+. ${SCRIPT_DIR}/functions/build
+
+bot_log i "setup" "YoyoOS packageing bot is running"
+
+while true; do
+cat ${SCRIPT_DIR}/config/repos | while read line; do
+	# user repo branch
+	# echo $line
+	new_tag=$(github_fresh_tag ${line})
+	new_commit=
+	repo_name=$(echo ${line} | cut -f 2 -d ' ')
+	if [ "${new_tag}" != "" ]; then
+		bot_log i "new tag" "${line} ${new_tag}"
+		github_clone ${line} ${new_tag}
+		debian_build ${TMP_DIR}/repos/${repo_name}
+		ubuntu_build ${TMP_DIR}/repos/${repo_name}
+	elif [ "${new_commit}" != "" ]; then
+		bot_log i "new commit" "${line} - ${new_commit}"
+		github_clone ${line} ${new_commit}
+	fi
+done
+sleep 3000
+done
+
