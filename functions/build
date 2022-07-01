@@ -102,12 +102,12 @@ schroot_clean() {
 # build debian package
 # parameter: repo_path
 debian_build() {
-if [ -n ${DEBIAN_VERSION} ]; then
+if [ "${DEBIAN_VERSION}" != "" ]; then
 	local tarball_name tarball_path output_path
 	bot_log d "build" "call debian build function"
 
 	[ -d ${TMP_DIR}/backup/tarballs ] || mkdir ${TMP_DIR}/backup/tarballs
-	tarball_name=debian_$(basename $1)_${BUILD_ARCH}_$(date -u +%Y%m%d).tar.gz
+	tarball_name=debian_${DEBIAN_VERSION}_${BUILD_ARCH}_$(date -u +%Y%m%d).tar.gz
 	tarball_path=${TMP_DIR}/backup/tarballs/${tarball_name}
 	if [ ! -f ${tarball_path} ]; then
 		# delete old tarball and build new tarball
@@ -148,12 +148,12 @@ fi
 }
 
 ubuntu_build() {
-if [ -n ${UBUNTU_VERSION} ]; then
+if [ "${UBUNTU_VERSION}" != "" ]; then
 	local tarball_name tarball_path output_path
 	bot_log d "build" "call ubuntu build function"
 
 	[ -d ${TMP_DIR}/backup/tarballs ] || mkdir ${TMP_DIR}/backup/tarballs
-	tarball_name=ubuntu_$(basename $1)_${BUILD_ARCH}_$(date -u +%Y%m%d).tar.gz
+	tarball_name=ubuntu_${UBUNTU_VERSION}_${BUILD_ARCH}_$(date -u +%Y%m%d).tar.gz
 	tarball_path=${TMP_DIR}/backup/tarballs/${tarball_name}
 	if [ ! -f ${tarball_path} ]; then
 		# delete old tarball and build new tarball

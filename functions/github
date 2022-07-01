@@ -19,9 +19,10 @@ github_fresh_tag() {
 	tags=$(github_get_tags $1 $2)
 	touch ${TMP_DIR}/backup/tags
 
+	# jq will return "null" if there is no tag
 	new_tag=$(echo ${tags} | jq -r ".[0] | .name")
 	old_tag=$(grep "^$1 $2 $3" ${TMP_DIR}/backup/tags | cut -f 4 -d ' ')
-	if [ "${new_tag}" != "${old_tag}" ]; then
+	if [[ "${new_tag}" != "null" && "${new_tag}" != "${old_tag}" ]]; then
 		echo ${new_tag}
 		if [ -n "${old_tag}" ]; then
 			sed -i "s/$1 $2 $3 ${old_tag}/$1 $2 $3 ${new_tag}/" ${TMP_DIR}/backup/tags
