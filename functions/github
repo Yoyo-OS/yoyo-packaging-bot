@@ -18,18 +18,32 @@ github_fresh_tag() {
 	
 	tags=$(github_get_tags $1 $2)
 	touch ${TMP_DIR}/backup/tags
+	touch ${TMP_DIR}/backup/failed_tags
 
 	# jq will return "null" if there is no tag
 	new_tag=$(echo ${tags} | jq -r ".[0] | .name")
 	old_tag=$(grep "^$1 $2 $3" ${TMP_DIR}/backup/tags | cut -f 4 -d ' ')
-	if [[ "${new_tag}" != "null" && "${new_tag}" != "${old_tag}" ]]; then
+	if [ "${new_tag}" != "null" ]; then
+	if [ "${new_tag}" != "${old_tag}" ]; then
 		echo ${new_tag}
 		if [ -n "${old_tag}" ]; then
-			sed -i "s/$1 $2 $3 ${old_tag}/$1 $2 $3 ${new_tag}/" ${TMP_DIR}/backup/tags
+			sed -i "s/^$1 $2 $3 ${old_tag}$/$1 $2 $3 ${new_tag}/" ${TMP_DIR}/backup/tags
 		else
 			echo $1 $2 $3 ${new_tag} >> ${TMP_DIR}/backup/tags
 		fi
+	elif [ "$(grep "^$1 $2 $3 ${old_tag}$" ${TMP_DIR}/backup/failed_tags)" != "" ]; then
+		# retry failed tag
+		echo ${old_tag}
+		sed -i "s/^$1 $2 $3 ${old_tag}\$//" ${TMP_DIR}/backup/failed_tags
 	fi
+	fi
+}
+
+# github build fail function
+# parameter: user repo branch tag
+github_failed_tag() {
+	echo $1 $2 $3 $4 >> ${TMP_DIR}/backup/failed_tags
+	github_clean $1 $2
 }
 
 # github clone repo
@@ -37,9 +51,19 @@ github_fresh_tag() {
 # parameter: user repo branch tag commmit
 # if tag=="-" then use commit
 github_clone() {
-	local old_dir
+	local old_dir retrys
 	[ -d ${TMP_DIR}/repos/$2 ] && rm -rf ${TMP_DIR}/repos/$2
-	GIT_SSH_COMMAND="ssh -i ${GITHUB_SSHKEY}" git clone git@github.com:$1/$2.git ${TMP_DIR}/repos/$2
+
+	retrys=0
+	while [ ${retrys} -lt 20 ]; do
+		if GIT_SSH_COMMAND="ssh -i ${GITHUB_SSHKEY}" git clone git@github.com:$1/$2.git ${TMP_DIR}/repos/$2; then
+			break
+		else
+			retrys=$(expr ${retrys} + 1)
+		fi
+	done
+	[[ ${retrys} -gt 0 && ${retrys} -lt 20 ]] && bot_log w "git-clone" "git clone $1/$2 retried ${retrys} time(s)"
+	[ ${retrys} -ge 20 ] && bot_log e "git-clone" "git clone $1/$2 failed after ${retrys} retrys" && return 1
 	old_dir=$(pwd)
 	cd ${TMP_DIR}/repos/$2
 	git switch --quiet $3
@@ -47,4 +71,11 @@ github_clone() {
 	[[ "$4" == "-" && "$5" != "" ]] && git checkout --quiet $5
 	cd ${old_dir}
 }
+
+# github clean locale repo
+# parameter: user repo
+github_clean() {
+	rm -rf ${TMP_DIR}/repos/$2
+}
+
 

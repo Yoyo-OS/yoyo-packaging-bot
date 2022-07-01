@@ -3,7 +3,7 @@
 set -e
 
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
-TMP_DIR=/tmp/yoyo-pkg-bot
+TMP_DIR=/srv/yoyo-pkg-bot
 
 uid=$(id -u)
 if [ ${uid} -ne 0 ]; then
@@ -52,14 +52,18 @@ cat ${SCRIPT_DIR}/config/repos | while read line; do
 	repo_name=$(echo ${line} | cut -f 2 -d ' ')
 	if [ "${new_tag}" != "" ]; then
 		bot_log i "new tag" "${line} ${new_tag}"
-		github_clone ${line} ${new_tag}
-		debian_build ${TMP_DIR}/repos/${repo_name}
-		ubuntu_build ${TMP_DIR}/repos/${repo_name}
+		if ! github_clone ${line} ${new_tag}; then
+			github_failed_tag ${line} ${new_tag}; continue; fi
+		if ! debian_build ${TMP_DIR}/repos/${repo_name}; then
+			github_failed_tag ${line} ${new_tag}; continue; fi
+		if ! ubuntu_build ${TMP_DIR}/repos/${repo_name}; then
+			github_failed_tag ${line} ${new_tag}; continue; fi
 	elif [ "${new_commit}" != "" ]; then
 		bot_log i "new commit" "${line} - ${new_commit}"
 		github_clone ${line} ${new_commit}
 	fi
+	github_clean ${line}
 done
-sleep 3000
+sleep 5
 done
 
