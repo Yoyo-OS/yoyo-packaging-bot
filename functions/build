@@ -197,7 +197,7 @@ mk-build-deps -i -t "apt-get -qq --yes" -r
 dpkg-buildpackage -b -uc -us -j$(nproc)
 cd ..
 cp -v *.deb $1
-cp -v *.ddeb $1
+cp -v *.ddeb $1 || echo No ddeb package
 EOF
 	bot_log d "schroot" "prepare ${UBUNTU_VERSION} schroot"
 	schroot_prepare ${tarball_path} $1 ${TMP_DIR}/cache/ubuntu_build.sh || return 1
