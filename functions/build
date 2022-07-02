@@ -35,6 +35,7 @@ debootstrap_unpack() {
 	cd ${TMP_DIR}/cache/chroot
 	bot_log d "unpack" "extract tarball $1"
 	tar --numeric-owner -zxpf $1
+	cd ${old_dir}
 }
 
 # schroot prepare
@@ -112,7 +113,7 @@ if [ "${DEBIAN_VERSION}" != "" ]; then
 	tarball_path=${SRV_DIR}/tarballs/${tarball_name}
 	if [ ! -f ${tarball_path} ]; then
 		# delete old tarball and build new tarball
-		rm -f debian_$1_${BUILD_ARCH}_*.tar.gz
+		rm -f ${SRV_DIR}/tarballs/debian_$1_${BUILD_ARCH}_*.tar.gz
 		debootstrap_pack ${DEBIAN_VERSION} ${DEBIAN_MIRROR} ${tarball_path} || return 1
 	fi
 
@@ -168,7 +169,7 @@ if [ "${UBUNTU_VERSION}" != "" ]; then
 	tarball_path=${SRV_DIR}/tarballs/${tarball_name}
 	if [ ! -f ${tarball_path} ]; then
 		# delete old tarball and build new tarball
-		rm -f ubuntu_$1_${BUILD_ARCH}_*.tar.gz
+		rm -f ${SRV_DIR}/tarballs/ubuntu_$1_${BUILD_ARCH}_*.tar.gz
 		debootstrap_pack ${UBUNTU_VERSION} ${UBUNTU_MIRROR} ${tarball_path}
 	fi
 
