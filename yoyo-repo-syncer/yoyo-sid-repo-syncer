@@ -4,7 +4,7 @@ set -e
 
 SYNC_DIRS="dists pool key index.html"
 SRV_REPO="/srv/yoyoos-sid"
-PUB_REPO="/srv/mirrors/yoyoos-sid"
+PUB_REPO="/srv/mirrors/yoyoos-deb"
 
 rclone version >/dev/null
 
