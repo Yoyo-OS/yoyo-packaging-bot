@@ -68,6 +68,7 @@ cat ${SCRIPT_DIR}/config/repos | while read line; do
 	fi
 	github_clean ${line}
 done
+bot_log d "setup" "Scan finished $?"
 sleep 5
 done
 

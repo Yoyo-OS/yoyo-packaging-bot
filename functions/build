@@ -13,7 +13,7 @@ debootstrap_pack() {
 	mkdir ${TMP_DIR}/cache/bootstrap
 	cd ${TMP_DIR}/cache/bootstrap
 	# debootstrap
-	debootstrap --arch=${BUILD_ARCH} $1 . $2
+	debootstrap --arch=${BUILD_ARCH} $1 . $2 || return 1
 	# tarball
 	bot_log i "new tarball" "new $1 ${BUILD_ARCH} tarball on $3"
 	tar --numeric-owner -zcpf $3 .
@@ -42,7 +42,7 @@ debootstrap_unpack() {
 # check schroot configuration
 # parameter: tarball_path repo_dir script_path
 schroot_prepare() {
-	debootstrap_unpack $1
+	debootstrap_unpack $1 || return 1
 	# configure schroot
 	if [ ! -d /etc/schroot/yoyo-pkg-bot ]; then
 		bot_log d "schroot configure" "use default schroot configuration"
@@ -90,11 +90,12 @@ EOF
 # output packages should be placed under ${repo_dir}
 # parameter: repo_dir
 schroot_build() {
-	schroot -c yoyo-pkg-bot-chroot -u root -d /root /root/build.sh $1
+	schroot -c yoyo-pkg-bot-chroot -u root -s /bin/bash -d /root /root/build.sh $1
 }
 
 # clean schroot environment
 schroot_clean() {
+	bot_log d "schroot clean" "clean chroot dir"
 	rm -r ${TMP_DIR}/cache/chroot
 }
 
@@ -112,7 +113,7 @@ if [ "${DEBIAN_VERSION}" != "" ]; then
 	if [ ! -f ${tarball_path} ]; then
 		# delete old tarball and build new tarball
 		rm -f debian_$1_${BUILD_ARCH}_*.tar.gz
-		debootstrap_pack ${DEBIAN_VERSION} ${DEBIAN_MIRROR} ${tarball_path}
+		debootstrap_pack ${DEBIAN_VERSION} ${DEBIAN_MIRROR} ${tarball_path} || return 1
 	fi
 
 	output_path=${TMP_DIR}/backup/debian_debs/$(basename $1)
@@ -136,12 +137,16 @@ cd ..
 cp -v *.deb ${output_path}
 EOF
 	bot_log d "schroot" "prepare ${DEBIAN_VERSION} schroot"
-	schroot_prepare ${tarball_path} $1 ${TMP_DIR}/cache/debian_build.sh
+	schroot_prepare ${tarball_path} $1 ${TMP_DIR}/cache/debian_build.sh || return 1
 	rm ${TMP_DIR}/cache/debian_build.sh
 	[ -d ${output_path} ] || mkdir -p ${output_path}
 	rm -f ${output_path}/*
 	bot_log d "schroot" "build $(basename $1) debian packages"
-	schroot_build ${output_path}
+	if ! schroot_build ${output_path}; then
+		bot_log w "build failed" "schroot build script exit"
+		schroot_clean
+		return 1;
+	fi
 	schroot_clean
 
 	[ -d ${package_path} ] || mkdir -p ${package_path}
@@ -194,12 +199,16 @@ cp -v *.deb $1
 cp -v *.ddeb $1
 EOF
 	bot_log d "schroot" "prepare ${UBUNTU_VERSION} schroot"
-	schroot_prepare ${tarball_path} $1 ${TMP_DIR}/cache/ubuntu_build.sh
+	schroot_prepare ${tarball_path} $1 ${TMP_DIR}/cache/ubuntu_build.sh || return 1
 	rm ${TMP_DIR}/cache/ubuntu_build.sh
 	[ -d ${output_path} ] || mkdir -p ${output_path}
 	rm -f ${output_path}/*
 	bot_log d "schroot" "build $(basename $1) ubuntu packages"
-	schroot_build ${output_path}
+	if ! schroot_build ${output_path}; then
+		bot_log w "build failed" "schroot build script exit"
+		schroot_clean
+		return 1
+	fi
 	schroot_clean
 
 	[ -d ${package_path} ] || mkdir -p ${package_path}

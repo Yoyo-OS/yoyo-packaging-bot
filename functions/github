@@ -62,6 +62,7 @@ github_clone() {
 			break
 		else
 			retrys=$(expr ${retrys} + 1)
+			# sleep 15
 		fi
 	done
 	[[ ${retrys} -gt 0 && ${retrys} -lt 20 ]] && bot_log w "git-clone" "git clone $1/$2 retried ${retrys} time(s)"
