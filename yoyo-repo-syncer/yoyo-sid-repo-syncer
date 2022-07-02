@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -e
+
+SYNC_DIRS="dists pool key"
+SRV_REPO="/srv/yoyoos-sid"
+PUB_REPO="/srv/mirrors/yoyoos-sid"
+
+rclone version >/dev/null
+
+WORK_DIR=./yoyo-repo-sync
+
+[ -d ${WORK_DIR} ] && rm -r ${WORK_DIR}
+mkdir ${WORK_DIR}
+
+for dir in ${SYNC_DIRS}; do
+	cp -r ${SRV_REPO}/${dir} ${WORK_DIR}/${dir}
+done
+rclone sync ${WORK_DIR} ${PUB_REPO}
+
+rm -r ${WORK_DIR}
+
