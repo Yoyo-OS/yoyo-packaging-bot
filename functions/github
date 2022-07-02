@@ -22,7 +22,7 @@ github_fresh_tag() {
 	touch ${SRV_DIR}/github/failed_tags
 
 	# jq will return "null" if there is no tag
-	new_tag=$(echo ${tags} | jq -r ".[0] | .name")
+	new_tag=$(echo ${tags} | jq -r ".[] | .name" | sort -r | head -n1)
 	old_tag=$(grep "^$1 $2 $3" ${SRV_DIR}/github/tags | cut -f 4 -d ' ')
 	if [ "${new_tag}" != "null" ]; then
 	if [ "${new_tag}" != "${old_tag}" ]; then
@@ -43,7 +43,11 @@ github_fresh_tag() {
 # github build fail function
 # parameter: user repo branch tag
 github_failed_tag() {
+	# delete empty lines
+	sed -i '/^$/d' ${SRV_DIR}/github/failed_tags
+	# add new failed tag line
 	echo $1 $2 $3 $4 >> ${SRV_DIR}/github/failed_tags
+	# clean local repo
 	github_clean $1 $2
 }
 

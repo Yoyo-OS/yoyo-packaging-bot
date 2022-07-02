@@ -143,7 +143,7 @@ EOF
 	rm -f ${output_path}/*
 	bot_log d "schroot" "build $(basename $1) debian packages"
 	if ! schroot_build ${output_path}; then
-		bot_log w "build failed" "schroot build script exit"
+		bot_log w "build failed" "$(basename $1) schroot build script exit"
 		schroot_clean
 		return 1;
 	fi
@@ -205,7 +205,7 @@ EOF
 	rm -f ${output_path}/*
 	bot_log d "schroot" "build $(basename $1) ubuntu packages"
 	if ! schroot_build ${output_path}; then
-		bot_log w "build failed" "schroot build script exit"
+		bot_log w "build failed" "$(basename $1) schroot build script exit"
 		schroot_clean
 		return 1
 	fi
