@@ -23,22 +23,11 @@ mkdir ${TMP_DIR}/cache
 . ${SCRIPT_DIR}/config/config
 [ -f ${SCRIPT_DIR}/config/config_usr ] && . ${SCRIPT_DIR}/config/config_usr
 
-if [ -z ${GITHUB_KEY} ]; then
-	echo No github key
-	exit 1
-fi
-if [ -z ${GITHUB_SSHKEY} ]; then
-	echo No github ssh key
-	exit 1
-fi
-if [ -z ${BUILD_ARCH} ]; then
-	echo No build arch
-	exit 1
-fi
-if [ "$(cat ${SCRIPT_DIR}/config/repos)" == "" ]; then
-	echo No package signed
-	exit 1
-fi
+if [ "${GITHUB_KEY}" == "" ]; then echo No github key; exit 1; fi
+if [ "${GITHUB_SSHKEY}" == "" ]; then echo No github ssh key; exit 1; fi
+if [ "${BUILD_ARCH}" == "" ]; then echo No build arch; exit 1; fi
+if [ "${SCP_REMOTE}" == "" ]; then echo scp remote not set; exit 1; fi
+if [ "$(cat ${SCRIPT_DIR}/config/repos)" == "" ]; then echo No package signed; exit 1; fi
 
 . ${SCRIPT_DIR}/functions/logging
 . ${SCRIPT_DIR}/functions/github
