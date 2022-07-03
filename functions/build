@@ -113,7 +113,7 @@ if [ "${DEBIAN_VERSION}" != "" ]; then
 	tarball_path=${SRV_DIR}/tarballs/${tarball_name}
 	if [ ! -f ${tarball_path} ]; then
 		# delete old tarball and build new tarball
-		rm -f ${SRV_DIR}/tarballs/debian_$1_${BUILD_ARCH}_*.tar.gz
+		rm -f ${SRV_DIR}/tarballs/debian_${DEBIAN_VERSION}_${BUILD_ARCH}_*.tar.gz
 		debootstrap_pack ${DEBIAN_VERSION} ${DEBIAN_MIRROR} ${tarball_path} || return 1
 	fi
 
@@ -155,7 +155,8 @@ EOF
 	cp -v ${output_path}/*.* ${package_path}
 	rm -r ${output_path}
 
-	scp ${output_path}/*.* ${SCP_REMOTE}/debian_debs/
+	bot_log d "scp" "send $(basename $1) packages"
+	scp ${package_path}/*.* ${SCP_REMOTE}/debian_debs/
 
 	bot_log i "build secceed" "$(basename $1) debian ${DEBIAN_VERSION} ${BUILD_ARCH} packages"
 fi
@@ -171,7 +172,7 @@ if [ "${UBUNTU_VERSION}" != "" ]; then
 	tarball_path=${SRV_DIR}/tarballs/${tarball_name}
 	if [ ! -f ${tarball_path} ]; then
 		# delete old tarball and build new tarball
-		rm -f ${SRV_DIR}/tarballs/ubuntu_$1_${BUILD_ARCH}_*.tar.gz
+		rm -f ${SRV_DIR}/tarballs/ubuntu_${UBUNTU_VERSION}_${BUILD_ARCH}_*.tar.gz
 		debootstrap_pack ${UBUNTU_VERSION} ${UBUNTU_MIRROR} ${tarball_path}
 	fi
 
@@ -198,8 +199,8 @@ cd $(basename $1)
 mk-build-deps -i -t "apt-get -qq --yes" -r
 dpkg-buildpackage -b -uc -us -j$(nproc)
 cd ..
-cp -v *.deb $1
-cp -v *.ddeb $1 || echo No ddeb package
+cp -v *.deb ${output_path}
+cp -v *.ddeb ${output_path} || echo No ddeb package
 EOF
 	bot_log d "schroot" "prepare ${UBUNTU_VERSION} schroot"
 	schroot_prepare ${tarball_path} $1 ${TMP_DIR}/cache/ubuntu_build.sh || return 1
@@ -219,7 +220,8 @@ EOF
 	cp -v ${output_path}/*.* ${package_path}
 	rm -r ${output_path}
 
-	scp ${output_path}/*.* ${SCP_REMOTE}/ubuntu_debs/
+	bot_log d "scp" "send $(basename $1) packages"
+	scp ${package_path}/*.* ${SCP_REMOTE}/ubuntu_debs/
 
 	bot_log i "build secceed" "$(basename $1) ubuntu ${UBUNTU_VERSION} ${BUILD_ARCH} packages"
 fi

@@ -6,7 +6,7 @@ GIT_REPO=git@github.com:Yoyo-OS/packages.git
 GIT_BRANCH=master
 GIT_MAX_SIZE=1073741824   # in bytes
 SYNC_DIRS="dists lists pool key sources_mirrors.list"
-REMOTE_REPOS="yoyo-publish:yoyoos/yoyo"
+REMOTE_REPOS="yoyo-inuyasha:inuyasha-mirrors/yoyo"
 
 git --version >/dev/null
 rclone version >/dev/null
@@ -20,12 +20,16 @@ cd ${WORK_DIR}
 if [[ -d ${WORK_DIR}/git-repo ]]; then
 	cd ${WORK_DIR}/git-repo
 	if ! git pull --quiet; then
+		echo git pull failed, reclone it
 		rm -rf *
 		git clone --quiet ${GIT_REPO} .
 	fi
 else
+	echo git clone
 	git clone --quiet ${GIT_REPO} git-repo
 fi
+echo git repo sync finished
+
 cd ${WORK_DIR}/git-repo
 git checkout --quiet ${GIT_BRANCH}
 cd ${WORK_DIR}
@@ -34,15 +38,18 @@ cd ${WORK_DIR}
 mkdir ${WORK_DIR}/remote-repo
 
 for dir in ${SYNC_DIRS}; do
+	echo copy files ${WORK_DIR}/git-repo/${dir}
 	cp -r ${WORK_DIR}/git-repo/${dir} ${WORK_DIR}/remote-repo/
 done
 for repo in ${REMOTE_REPOS}; do
+	echo sync ${repo}
 	rclone sync ${WORK_DIR}/remote-repo ${repo}
 done
 
 size=$(du -sx --block-size=1 /tmp/yoyo-repo-syncer/git-repo | cut -f1)
 if [[ ${size} -gt ${GIT_MAX_SIZE} ]]; then
 	# clear commit logs
+	echo git repo size too big
 	cd ${WORK_DIR}/git-repo
 	git checkout --quiet --orphan tmp-${GIT_BRANCH}-new
 	git add .
@@ -50,6 +57,7 @@ if [[ ${size} -gt ${GIT_MAX_SIZE} ]]; then
 	git branch --quiet --delete --force ${GIT_BRANCH}
 	git branch --quiet --move ${GIT_BRANCH}
 	# gc
+	echo git gc
 	git reflog expire --expire=all --all
 	git gc --quiet --aggressive --prune=now
 	new_size=$(du -sx --block-size=1 /tmp/yoyo-repo-syncer/git-repo | cut -f1)
@@ -57,8 +65,10 @@ if [[ ${size} -gt ${GIT_MAX_SIZE} ]]; then
 	       git commit --quiet --amend --message "Repo size still unbearable after automatical gc"
 	fi
 	# push
+	echo git push
 	git push --force origin ${GIT_BRANCH}
 fi
 
+echo sync finished
 cd ${OLD_DIR}
 

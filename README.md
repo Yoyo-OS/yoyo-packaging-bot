@@ -2,7 +2,7 @@
 
 ## yoyo-pkg-bot
 
-A automatically packaging bot.
+A automatically packaging bot, a client of yoyo-mirror-bot.
 
 Rolling github repository tags and build ubuntu and debian packages in schroot environment.
 
@@ -16,18 +16,24 @@ No need any additional configuration of schroot, the bot will configure it autom
 
 ### Output packages
 
-Packages will be output under ``/tmp/yoyo-pkg-bot/backup/debian_debs`` and ``/tmp/yoyo-pkg-bot/backup/ubuntu_debs``
+Packages will be output under ``/tmp/yoyo-pkg-bot/backup/debian_debs`` and ``/tmp/yoyo-pkg-bot/backup/ubuntu_debs``, and scp to remote server.
 
-## Dependencies
+### Dependencies
 
 + jq
-+ git
-+ debootstrap
-+ schroot
++ git (configure api key and ssh key in ``config/config``)
++ debootstrap (configure suite and mirror in ``config/config``)
++ schroot (will be configured automatically)
++ scp (need scp been manually configured)
++ gotify (bot will send notifications to a gotify server configured in ``config/config``)
+
+## yoyo-mirror-bot
+
+A bot to add new packages into mirror and sync mirrors automatically, a server of yoyo-pkg-bot.
 
 ## yoyo-chroot-builder
 
-A script to run [pbuilder](https://pbuilder-team.pages.debian.net/pbuilder/).
+A script to run [pbuilder](https://pbuilder-team.pages.debian.net/pbuilder/) scripts.
 
 But not have been used in fact.
 
