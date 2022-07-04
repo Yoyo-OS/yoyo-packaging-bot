@@ -35,6 +35,7 @@ github_fresh_tag() {
 	elif [ "$(grep "^$1 $2 $3 ${old_tag}$" ${SRV_DIR}/github/failed_tags)" != "" ]; then
 		# retry failed tag
 		echo ${old_tag}
+		sed -i '/^$/d' ${SRV_DIR}/github/failed_tags
 		sed -i "s/^$1 $2 $3 .*//" ${SRV_DIR}/github/failed_tags
 	fi
 	fi
@@ -43,7 +44,7 @@ github_fresh_tag() {
 # github build fail function
 # parameter: user repo branch tag
 github_failed_tag() {
-	# delete empty lines
+	# delete empty or duplicate lines
 	sed -i '/^$/d' ${SRV_DIR}/github/failed_tags
 	sed -i "s/^$1 $2 $3 .*//" ${SRV_DIR}/github/failed_tags
 	# add new failed tag line
