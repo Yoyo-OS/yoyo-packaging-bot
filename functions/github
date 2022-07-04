@@ -24,7 +24,7 @@ github_fresh_tag() {
 	# jq will return "null" if there is no tag
 	new_tag=$(echo ${tags} | jq -r ".[] | .name" | sort -r | head -n1)
 	old_tag=$(grep "^$1 $2 $3" ${SRV_DIR}/github/tags | cut -f 4 -d ' ')
-	if [ "${new_tag}" != "null" ]; then
+	if [ "${new_tag}" != "null" ] && [ "${new_tag}" != "" ]; then
 	if [ "${new_tag}" != "${old_tag}" ]; then
 		echo ${new_tag}
 		if [ -n "${old_tag}" ]; then
@@ -35,7 +35,7 @@ github_fresh_tag() {
 	elif [ "$(grep "^$1 $2 $3 ${old_tag}$" ${SRV_DIR}/github/failed_tags)" != "" ]; then
 		# retry failed tag
 		echo ${old_tag}
-		sed -i "s/^$1 $2 $3 ${old_tag}\$//" ${SRV_DIR}/github/failed_tags
+		sed -i "s/^$1 $2 $3 .*//" ${SRV_DIR}/github/failed_tags
 	fi
 	fi
 }
@@ -45,6 +45,7 @@ github_fresh_tag() {
 github_failed_tag() {
 	# delete empty lines
 	sed -i '/^$/d' ${SRV_DIR}/github/failed_tags
+	sed -i "s/^$1 $2 $3 .*//" ${SRV_DIR}/github/failed_tags
 	# add new failed tag line
 	echo $1 $2 $3 $4 >> ${SRV_DIR}/github/failed_tags
 	# clean local repo
