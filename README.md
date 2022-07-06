@@ -31,6 +31,10 @@ Packages will be output under ``/tmp/yoyo-pkg-bot/backup/debian_debs`` and ``/tm
 
 A bot to add new packages into mirror and sync mirrors automatically, a server of yoyo-pkg-bot.
 
+``config/mirror_config`` is the default configure file, and you can edit ``config/mirror_config_usr`` to overwite it.
+
+Use nginx proxy ``yoyo-mirror-bot`` to make a https server.
+
 ## yoyo-chroot-builder
 
 A script to run [pbuilder](https://pbuilder-team.pages.debian.net/pbuilder/) scripts.

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -e
+
+# server config
+SERVER_PORT=50090
+SERVER_RANGE=127.0.0.1/32
+
+# X-YOYO-MIRROR-BOT-TOKEN http header
+MIRROR_TOKEN="inuyasha-x-youmu"
+
