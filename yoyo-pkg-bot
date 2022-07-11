@@ -12,6 +12,8 @@
 
 set -e
 
+LC_ALL=C
+
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 TMP_DIR=/tmp/yoyo-pkg-bot
 SRV_DIR=/srv/yoyo-pkg-bot
