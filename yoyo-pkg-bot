@@ -42,6 +42,9 @@ if [ "${GITHUB_SSHKEY}" == "" ]; then echo No github ssh key; exit 1; fi
 if [ "${BUILD_ARCH}" == "" ]; then echo No build arch; exit 1; fi
 if [ "${SCP_REMOTE}" == "" ]; then echo scp remote not set; exit 1; fi
 if [ "${SSH_CONFIG}" == "" ]; then echo ssh configure file path not set; exit 1; fi
+old_home=${HOME}; [ "${SSH_CONFIG_HOME}" != "" ] && HOME=${SSH_CONFIG_HOME}
+if [ -d "${SSH_CONFIG}" ]; then echo ${SSH_CONFIG} no such file; exit 1; fi
+HOME=${old_home}; unset old_home
 if [ "$(cat ${SCRIPT_DIR}/config/repos)" == "" ]; then echo No package signed; exit 1; fi
 
 . ${SCRIPT_DIR}/functions/logging

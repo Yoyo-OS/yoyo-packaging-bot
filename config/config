@@ -5,10 +5,12 @@ BOT_DEBUG=true
 BOT_HOSTNAME=
 
 # send package to mirror
-# SSH_CONFIG=/home/xxx/.ssh/config
+# SSH_CONFIG_HOME to overwrite $HOME when invoke scp
+# SSH_CONFIG=~/.ssh/config
 # debian packages: ${SCP_REMOTE}/debain_debs/
 # ubuntu packages: ${SCP_REMOTE}/ubuntu_debs/
 SSH_CONFIG=
+SSH_CONFIG_HOME=
 SCP_REMOTE=
 
 # github api key
