@@ -24,7 +24,7 @@ Packages will be output under ``/tmp/yoyo-pkg-bot/backup/debian_debs`` and ``/tm
 + git (configure api key and ssh key in ``config/config``)
 + debootstrap (configure suite and mirror in ``config/config``)
 + schroot (will be configured automatically)
-+ scp (need scp been manually configured)
++ scp (configure scp remote host in ``config/config``)
 + gotify (bot will send notifications to a gotify server configured in ``config/config``)
 
 ## yoyo-mirror-bot

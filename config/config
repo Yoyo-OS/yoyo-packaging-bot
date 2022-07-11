@@ -4,14 +4,15 @@ BOT_DEBUG=true
 # self host name
 BOT_HOSTNAME=
 
-# send package to mirror
-# SSH_CONFIG_HOME to overwrite $HOME when invoke scp
-# SSH_CONFIG=~/.ssh/config
-# debian packages: ${SCP_REMOTE}/debain_debs/
-# ubuntu packages: ${SCP_REMOTE}/ubuntu_debs/
-SSH_CONFIG=
-SSH_CONFIG_HOME=
-SCP_REMOTE=
+# send package to remote host
+# debian packages: ${SCP_USER}@${SCP_HOST}:${SCP_PREFIX}/debain_debs/
+# ubuntu packages: ${SCP_USER}@${SCP_HOST}:${SCP_PREFIX}/ubuntu_debs/
+SCP_ENABLE=true
+SCP_USER=youmu
+SCP_KEY_FILE=/home/youmu/.ssh/keyfile
+SCP_HOST=192.168.0.100
+SCP_PORT=22
+SCP_PREFIX=/home/youmu/path_prefix
 
 # github api key
 GITHUB_KEY=

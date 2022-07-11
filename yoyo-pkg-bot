@@ -37,14 +37,25 @@ mkdir ${SRV_DIR}/cache
 . ${SCRIPT_DIR}/config/config
 [ -f ${SCRIPT_DIR}/config/config_usr ] && . ${SCRIPT_DIR}/config/config_usr
 
+[ -n "${BOT_DEBUG}" ] && echo "Debug enabled"
+
 if [ "${GITHUB_KEY}" == "" ]; then echo No github key; exit 1; fi
 if [ "${GITHUB_SSHKEY}" == "" ]; then echo No github ssh key; exit 1; fi
 if [ "${BUILD_ARCH}" == "" ]; then echo No build arch; exit 1; fi
-if [ "${SCP_REMOTE}" == "" ]; then echo scp remote not set; exit 1; fi
-if [ "${SSH_CONFIG}" == "" ]; then echo ssh configure file path not set; exit 1; fi
-old_home=${HOME}; [ "${SSH_CONFIG_HOME}" != "" ] && HOME=${SSH_CONFIG_HOME}
-if [ -d "${SSH_CONFIG}" ]; then echo ${SSH_CONFIG} no such file; exit 1; fi
-HOME=${old_home}; unset old_home
+# check remote
+SCP_REMOTE=
+if [ -n "${SCP_ENABLE}" ]; then
+	if [ -z "${SCP_KEY_FILE}" ]; then echo No ssh key set; exit 1; fi
+	if [ ! -f "${SCP_KEY_FILE}" ]; then echo No such file: ${SCP_KEY_FILE}; exit 1; fi
+	if [ -z "${SCP_PORT}" ]; then SCP_PORT="22"; echo Use default ssh port 22; fi
+	if [ -z "${SCP_HOST}" ]; then echo No scp host set; exit 1; fi
+	if [ -z "${SCP_PREFIX}" ]; then SCP_PREFIX="/"; fi
+	SCP_REMOTE="${SCP_USER}@${SCP_HOST}:${SCP_PREFIX}"
+	echo packages will be sent to ${SCP_REMOTE} port ${SCP_PORT}
+else
+	echo "scp disabled"
+fi
+# check config/repos
 if [ "$(cat ${SCRIPT_DIR}/config/repos)" == "" ]; then echo No package signed; exit 1; fi
 
 . ${SCRIPT_DIR}/functions/logging
