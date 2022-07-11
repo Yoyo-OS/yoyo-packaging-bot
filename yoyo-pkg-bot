@@ -24,7 +24,9 @@ fi
 
 [ -d ${TMP_DIR} ] || mkdir ${TMP_DIR} -m 700
 [ -d ${TMP_DIR}/cache ] && rm -rf ${TMP_DIR}/cache
+[ -d ${SRV_DIR}/cache ] && rm -rf ${SRV_DIR}/cache
 mkdir ${TMP_DIR}/cache
+mkdir ${SRV_DIR}/cache
 [ -d ${TMP_DIR}/backup ] || mkdir ${TMP_DIR}/backup
 [ -d ${TMP_DIR}/repos ] || mkdir ${TMP_DIR}/repos
 # ${SRV_DIR} will store built packages

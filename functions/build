@@ -18,17 +18,17 @@ set -e
 # parameter: suite mirror tarball_path
 debootstrap_pack() {
 	local old_dir
-	[ -d ${TMP_DIR}/cache/bootstrap ] && rm -rf ${TMP_DIR}/cache/bootstrap
+	[ -d ${SRV_DIR}/cache/bootstrap ] && rm -rf ${SRV_DIR}/cache/bootstrap
 	old_dir=$(pwd)
-	mkdir ${TMP_DIR}/cache/bootstrap
-	cd ${TMP_DIR}/cache/bootstrap
+	mkdir ${SRV_DIR}/cache/bootstrap
+	cd ${SRV_DIR}/cache/bootstrap
 	# debootstrap
 	debootstrap --arch=${BUILD_ARCH} $1 . $2 || return 1
 	# tarball
 	bot_log i "new tarball" "new $1 ${BUILD_ARCH} tarball on $3"
 	tar --numeric-owner -zcpf $3 .
 	# clean
-	rm -rf ${TMP_DIR}/cache/bootstrap
+	rm -rf ${SRV_DIR}/cache/bootstrap
 	cd ${old_dir}
 }
 
@@ -37,12 +37,12 @@ debootstrap_pack() {
 debootstrap_unpack() {
 	local old_dir
 	old_dir=$(pwd)
-	if [ -d ${TMP_DIR}/cache/chroot ]; then
-		bot_log e "chroot error" "${TMP_DIR}/cache/chroot exists, please check and remove it"
+	if [ -d ${SRV_DIR}/cache/chroot ]; then
+		bot_log e "chroot error" "${SRV_DIR}/cache/chroot exists, please check and remove it"
 		return 1;
 	fi
-	mkdir ${TMP_DIR}/cache/chroot
-	cd ${TMP_DIR}/cache/chroot
+	mkdir ${SRV_DIR}/cache/chroot
+	cd ${SRV_DIR}/cache/chroot
 	bot_log d "unpack" "extract tarball $1"
 	tar --numeric-owner -zxpf $1
 	cd ${old_dir}
@@ -81,7 +81,7 @@ EOF
 [yoyo-pkg-bot-chroot]
 type=directory
 description=YoyoOS packaging bot autobuilder
-directory=${TMP_DIR}/cache/chroot
+directory=${SRV_DIR}/cache/chroot
 root-users=root
 root-groups=root
 profile=yoyo-pkg-bot
@@ -90,10 +90,10 @@ EOF
 	fi
 
 	# copy repo
-	cp -r $2 ${TMP_DIR}/cache/chroot/root/
+	cp -r $2 ${SRV_DIR}/cache/chroot/root/
 	# copy script
-	cp $3 ${TMP_DIR}/cache/chroot/root/build.sh
-	chmod +x ${TMP_DIR}/cache/chroot/root/build.sh
+	cp $3 ${SRV_DIR}/cache/chroot/root/build.sh
+	chmod +x ${SRV_DIR}/cache/chroot/root/build.sh
 }
 
 # build with schroot
@@ -107,7 +107,7 @@ schroot_build() {
 # clean schroot environment
 schroot_clean() {
 	bot_log d "schroot clean" "clean chroot dir"
-	rm -r ${TMP_DIR}/cache/chroot
+	rm -r ${SRV_DIR}/cache/chroot
 }
 
 
