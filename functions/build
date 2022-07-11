@@ -166,7 +166,7 @@ EOF
 	rm -r ${output_path}
 
 	bot_log d "scp" "send $(basename $1) packages"
-	scp ${package_path}/*.* ${SCP_REMOTE}/debian_debs/
+	scp -F ${SSH_CONFIG} ${package_path}/*.* ${SCP_REMOTE}/debian_debs/
 
 	bot_log i "build secceed" "$(basename $1) debian ${DEBIAN_VERSION} ${BUILD_ARCH} packages"
 fi
@@ -231,7 +231,7 @@ EOF
 	rm -r ${output_path}
 
 	bot_log d "scp" "send $(basename $1) packages"
-	scp ${package_path}/*.* ${SCP_REMOTE}/ubuntu_debs/
+	scp -F ${SSH_CONFIG} ${package_path}/*.* ${SCP_REMOTE}/ubuntu_debs/
 
 	bot_log i "build secceed" "$(basename $1) ubuntu ${UBUNTU_VERSION} ${BUILD_ARCH} packages"
 fi

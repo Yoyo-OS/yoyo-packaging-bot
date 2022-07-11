@@ -5,8 +5,10 @@ BOT_DEBUG=true
 BOT_HOSTNAME=
 
 # send package to mirror
+# SSH_CONFIG=/home/xxx/.ssh/config
 # debian packages: ${SCP_REMOTE}/debain_debs/
 # ubuntu packages: ${SCP_REMOTE}/ubuntu_debs/
+SSH_CONFIG=
 SCP_REMOTE=
 
 # github api key
